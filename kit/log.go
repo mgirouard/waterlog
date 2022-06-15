@@ -1,12 +1,14 @@
 package kit
 
 import (
+	"io"
+
 	"github.com/ThreeDotsLabs/watermill"
 	log "github.com/go-kit/log"
 )
 
-func New(l log.Logger, debug, trace bool) Logger {
-	return Logger{l, debug, trace}
+func New(output io.Writer, debug, trace bool) watermill.LoggerAdapter {
+	return Logger{log.NewJSONLogger(output), debug, trace}
 }
 
 type Logger struct {
@@ -21,14 +23,16 @@ func (l Logger) Log(keyvals ...interface{}) error {
 
 func (l Logger) Error(msg string, err error, fields watermill.LogFields) {
 	fields = lfs(fields)
-	fields["msg"] = msg
-	fields["err"] = err
+	fields["level"] = "error"
+	fields["message"] = msg
+	fields["error"] = err
 	l.Log(kvs(fields)...)
 }
 
 func (l Logger) Info(msg string, fields watermill.LogFields) {
 	fields = lfs(fields)
-	fields["msg"] = msg
+	fields["level"] = "info"
+	fields["message"] = msg
 	l.Log(kvs(fields)...)
 }
 
@@ -37,7 +41,8 @@ func (l Logger) Debug(msg string, fields watermill.LogFields) {
 		return
 	}
 	fields = lfs(fields)
-	fields["msg"] = msg
+	fields["level"] = "debug"
+	fields["message"] = msg
 	l.Log(kvs(fields)...)
 }
 
@@ -46,7 +51,8 @@ func (l Logger) Trace(msg string, fields watermill.LogFields) {
 		return
 	}
 	fields = lfs(fields)
-	fields["msg"] = msg
+	fields["level"] = "trace"
+	fields["message"] = msg
 	l.Log(kvs(fields)...)
 }
 
