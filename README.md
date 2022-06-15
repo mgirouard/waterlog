@@ -20,7 +20,7 @@ To Do
 
 - [x] [go-kit/log]
 - [x] [rs/zerolog]
-- [ ] [sirupsen/logrus]
+- [x] [sirupsen/logrus]
 - [ ] [uber-go/zap]
 
 [Watermill]: https://github.com/ThreeDotsLabs/watermill

@@ -1,4 +1,4 @@
-package zero
+package logrus
 
 import (
 	"testing"
@@ -6,6 +6,6 @@ import (
 	"git.sr.ht/~mgirouard/waterlog"
 )
 
-func TestZero(t *testing.T) {
+func TestLogrus(t *testing.T) {
 	waterlog.TestLogger(t, New)
 }
