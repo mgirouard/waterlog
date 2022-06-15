@@ -3,18 +3,21 @@ package kit
 import (
 	"io"
 
+	"git.sr.ht/~mgirouard/waterlog"
 	"github.com/ThreeDotsLabs/watermill"
-	log "github.com/go-kit/log"
+	"github.com/go-kit/log"
 )
 
 func New(output io.Writer, debug, trace bool) watermill.LoggerAdapter {
-	return Logger{log.NewJSONLogger(output), debug, trace}
+	return Logger{
+		L:    log.NewJSONLogger(output),
+		Opts: waterlog.Opts{debug, trace},
+	}
 }
 
 type Logger struct {
-	L     log.Logger
-	debug bool
-	trace bool
+	L log.Logger
+	waterlog.Opts
 }
 
 func (l Logger) Log(keyvals ...interface{}) error {
@@ -37,7 +40,7 @@ func (l Logger) Info(msg string, fields watermill.LogFields) {
 }
 
 func (l Logger) Debug(msg string, fields watermill.LogFields) {
-	if !l.debug {
+	if !l.Opts.Debug {
 		return
 	}
 	fields = lfs(fields)
@@ -47,7 +50,7 @@ func (l Logger) Debug(msg string, fields watermill.LogFields) {
 }
 
 func (l Logger) Trace(msg string, fields watermill.LogFields) {
-	if !l.trace {
+	if !l.Opts.Trace {
 		return
 	}
 	fields = lfs(fields)
@@ -57,7 +60,10 @@ func (l Logger) Trace(msg string, fields watermill.LogFields) {
 }
 
 func (l Logger) With(fields watermill.LogFields) watermill.LoggerAdapter {
-	return &Logger{log.With(l.L, kvs(fields)...), l.debug, l.trace}
+	return &Logger{
+		L:    log.With(l.L, kvs(fields)...),
+		Opts: l.Opts,
+	}
 }
 
 func kvs(m map[string]interface{}) []interface{} {

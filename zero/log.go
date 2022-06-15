@@ -3,18 +3,21 @@ package zero
 import (
 	"io"
 
+	"git.sr.ht/~mgirouard/waterlog"
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/rs/zerolog"
 )
 
 func New(output io.Writer, debug, trace bool) watermill.LoggerAdapter {
-	return Logger{zerolog.New(output), debug, trace}
+	return Logger{
+		L:    zerolog.New(output),
+		Opts: waterlog.Opts{debug, trace},
+	}
 }
 
 type Logger struct {
-	L     zerolog.Logger
-	debug bool
-	trace bool
+	L zerolog.Logger
+	waterlog.Opts
 }
 
 func (l Logger) Error(msg string, err error, fields watermill.LogFields) {
@@ -32,7 +35,7 @@ func (l Logger) Info(msg string, fields watermill.LogFields) {
 	ev.Msg(msg)
 }
 func (l Logger) Debug(msg string, fields watermill.LogFields) {
-	if !l.debug {
+	if !l.Opts.Debug {
 		return
 	}
 	ev := l.L.Debug()
@@ -42,7 +45,7 @@ func (l Logger) Debug(msg string, fields watermill.LogFields) {
 	ev.Msg(msg)
 }
 func (l Logger) Trace(msg string, fields watermill.LogFields) {
-	if !l.trace {
+	if !l.Opts.Trace {
 		return
 	}
 	ev := l.L.Trace()
@@ -56,5 +59,8 @@ func (l Logger) With(fields watermill.LogFields) watermill.LoggerAdapter {
 	for k, v := range fields {
 		ctx = ctx.Interface(k, v)
 	}
-	return &Logger{ctx.Logger(), l.debug, l.trace}
+	return &Logger{
+		L:    ctx.Logger(),
+		Opts: l.Opts,
+	}
 }
